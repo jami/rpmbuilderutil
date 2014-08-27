@@ -99,7 +99,7 @@ Those object requires a type, source, destination and mode.
 	"name"        : "myprogram",
 	"version"     : "1.0.0",	
 	"target"      : "development",
-	"description" : "myprogram does a lot of stuff"
+	"description" : "myprogram does a lot of stuff",
 	"files"       : [
 		{
 			"type"        : "file",
@@ -111,7 +111,7 @@ Those object requires a type, source, destination and mode.
 }
 ```
 
-You can install a file that depends on an object element. Use **target** for this purpose. You can pass it external by argument too.
+You can install a file that depends on an object element. Use **target** for this purpose. You can pass it as external argument too.
 
 ```json
 {
@@ -191,6 +191,36 @@ Use **include** to filter a subset of the files.
 ```
 
 If the include string matches the filepath then the file pass the include filter
+
+### Events
+
+There are 4 events that could be handled
+
+* **preinstall** Before the installation starts
+* **postinstall** After the installation is done
+* **preuninstall** Before the uninstall
+* **postuninstall** After the uninstall
+
+You can either put shell commands to the handler or you use build in macros
+
+```json
+{
+	"preinstall": [
+		"echo 'preinstall'"
+	],
+	"postinstall" : [
+		"echo 'postinstall'",
+		"touch '/var/log/myprogram.log'",
+		"chown myuser: '/var/log/myprogram.log'"
+	],
+	"preuninstall" : [
+		"echo 'preuninstall'"
+	],
+	"postuninstall" : [
+		"echo 'postuninstall'"
+	]
+}
+```
 
 ### Require
 
