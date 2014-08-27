@@ -1,0 +1,14 @@
+{
+	"rpm"         : "rpmbuilderutil-{VERSION}-{RELEASE}.{ARCH}",
+	"name"        : "rpmbuilderutil",
+	"version"     : "1.0.0",	
+	"description" : "Utility tool to create rpm packages on the fly",
+	"files"       : [
+		{
+			"type"        : "file",
+			"source"      : "rpmbuilderutil.pl",
+			"destination" : "/usr/local/bin/rpmbuilderutil",
+			"mode"        : "0755"
+		}
+	]
+}
