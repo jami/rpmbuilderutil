@@ -4,7 +4,6 @@
 	"version"     : "1.0.0",	
 	"description" : "Utility tool to create rpm packages on the fly",
 	"require"     : {		
-		"rpmbuild": "*",
 		"perl"    : "*"
 	},
 	"files"       : [

@@ -13,17 +13,12 @@
 	"files"       : [
 		{
 			"type"        : "file",
-			"source"      : "targetconfig/databases.{TARGET}.php",
-			"destination" : "{WEBROOT}/config/autoload/databases.local.php",
-			"mode"        : "0644"
-		},
-		{
-			"type"        : "file",
 			"source"      : "vhost/vhost.{TARGET}.conf",
-			"destination" : "/etc/apache2/sites-enable/{NAME}.conf",
+			"destination" : "/etc/httpd/conf.d/sites-enabled/{NAME}.conf",
 			"mode"        : "0644",
 			"substitution" : {
-				"DOCUMENTROOT" : "{WEBROOT}/public"
+				"DOCUMENTROOT" : "{WEBROOT}/public",
+				"LOGERRORPATH" : "/var/log/apache2/webapp-error.log"
 			}
 		},
 		{
@@ -33,25 +28,20 @@
 			"mode"           : "0644",
 			"include"        : [
 				".php",
-				"composer",
+				".phtml",
 				"public",
 				"vendor",
 				"language"
 			]
+		},
+		{
+			"type"        : "file",
+			"source"      : "targetconfig/databases.{TARGET}.php",
+			"destination" : "{WEBROOT}/config/autoload/databases.local.php",
+			"mode"        : "0644"
 		}
 	],
-	"preinstall": [
-		"echo 'preinstall gogo'"
-	],
 	"postinstall" : [
-		"echo 'postinstall gogo'",
-		"(cd {WEBROOT} && php -f composer.phar install)",
 		"apachectl restart"
-	],
-	"preuninstall" : [
-		"echo 'preuninstall gogo'"
-	],
-	"postuninstall" : [
-		"echo 'postuninstall gogo'"
 	]
 }

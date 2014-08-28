@@ -286,4 +286,76 @@ The *build.json* for this task looks very simple:
 The rpm key defines the rpm output. rpmbuilderutil-{VERSION}-{RELEASE}.{ARCH} will be transformed into something like
 *rpmbuilderutil-1.0.0-1.x86_64(.rpm)*
 
+## Deploy the webapp example
+
+As actor i want to create a deployable rpm of a zf2 (skeleton) application. The rpm should install itself to /var/www/htdocs/<appname>, copy target depending config, set the httpd vhost conf /etc/httpd/conf.d/sites-enabled/<appname>.conf, set the log path to /var/log/apache2/<appname>-error.log and restart the apache after the installation
+
+The following steps should be done by the ci
+
+1. checkout the source
+2. run composer to get dependencies
+3. run rpmbuilderutil
+4. push created RPM to artifactory or deploy
+
+By hand
+
+	[jami@shodo rpmbuilderutil]# cd example/webapp/
+	[jami@shodo webapp]# ./composer.phar install 
+	[jami@shodo webapp]# rpmbuilderutil 
+
+The deploy by *rpm -i webapp-1.0.0-1.x86_64.rpm* 
+Finally set your hosts or dns to *webapp.localhost*
+
+```json
+{
+	"rpm"         : "{NAME}-{VERSION}-{RELEASE}.{ARCH}",
+	"name"        : "webapp",
+	"version"     : "1.0.0",
+	"target"      : "development",	
+	"group"       : "internet",
+	"description" : "Webapp that do stuff",
+	"webroot"     : "/var/www/htdocs/{NAME}",
+	"require"     : {		
+		"httpd" : "*",
+		"php"   : ">5.0.0"
+	},
+	"files"       : [
+		{
+			"type"        : "file",
+			"source"      : "vhost/vhost.{TARGET}.conf",
+			"destination" : "/etc/httpd/conf.d/sites-enabled/{NAME}.conf",
+			"mode"        : "0644",
+			"substitution" : {
+				"DOCUMENTROOT" : "{WEBROOT}/public",
+				"LOGERRORPATH" : "/var/log/apache2/webapp-error.log"
+			}
+		},
+		{
+			"type"           : "directory",
+			"source"         : "project",
+			"destination"    : "{WEBROOT}",
+			"mode"           : "0644",
+			"include"        : [
+				".php",
+				".phtml",
+				"public",
+				"vendor",
+				"language"
+			]
+		},
+		{
+			"type"        : "file",
+			"source"      : "targetconfig/databases.{TARGET}.php",
+			"destination" : "{WEBROOT}/config/autoload/databases.local.php",
+			"mode"        : "0644"
+		}
+	],
+	"postinstall" : [
+		"apachectl restart"
+	]
+}
+```
+
+
+
 

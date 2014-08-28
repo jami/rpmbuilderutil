@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/ZendSkeletonApplication for the canonical source repository
- * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -21,24 +21,19 @@ if (file_exists('vendor/autoload.php')) {
     $loader = include 'vendor/autoload.php';
 }
 
-if (class_exists('Zend\Loader\AutoloaderFactory')) {
-    return;
-}
-
 $zf2Path = false;
 
-if (is_dir('vendor/ZF2/library')) {
-    $zf2Path = 'vendor/ZF2/library';
-} elseif (getenv('ZF2_PATH')) {      // Support for ZF2_PATH environment variable or git submodule
+if (getenv('ZF2_PATH')) {           // Support for ZF2_PATH environment variable or git submodule
     $zf2Path = getenv('ZF2_PATH');
 } elseif (get_cfg_var('zf2_path')) { // Support for zf2_path directive value
     $zf2Path = get_cfg_var('zf2_path');
+} elseif (is_dir('vendor/ZF2/library')) {
+    $zf2Path = 'vendor/ZF2/library';
 }
 
 if ($zf2Path) {
     if (isset($loader)) {
         $loader->add('Zend', $zf2Path);
-        $loader->add('ZendXml', $zf2Path);
     } else {
         include $zf2Path . '/Zend/Loader/AutoloaderFactory.php';
         Zend\Loader\AutoloaderFactory::factory(array(
