@@ -45,16 +45,16 @@ print("Configuration $configfile\n") if $verbose;
 die("RPM output path '$rpmoutput' is not a dir or did not exist") unless (-d $rpmoutput);
 print("RPM output $rpmoutput\n") if $verbose;
 
-my $config_list = ();
+my @config_list;
 my $rpm_config  = load_json_file($configfile);
 
 if (ref($rpm_config) eq "HASH") {
-    push(@{$config_list}, $rpm_config);        
+    push(@config_list, $rpm_config);        
 } else {
-    $config_list = $rpm_config;
+    @config_list = @{$rpm_config};
 }
 
-foreach my $config (@{$config_list}) {
+foreach my $config (@config_list) {
     my $lookup = {
         "VERSION" => "1.0.0",
         "RELEASE" => "1",
@@ -253,7 +253,7 @@ sub prepare_files {
     my $config     = shift;
     my $sourcepath = $basepath;
     
-    my $files = $rpm_config->{'files'};
+    my $files = $config->{'files'};
     die("Package contains zero files") if (@$files == 0);    
     
     foreach my $file (@{$files}) {
