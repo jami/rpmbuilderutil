@@ -1,0 +1,57 @@
+{
+	"rpm"         : "{NAME}-{VERSION}-{RELEASE}.{ARCH}",
+	"name"        : "webapp",
+	"version"     : "1.0.0",
+	"target"      : "development",	
+	"group"       : "internet",
+	"description" : "Webapp that do stuff",
+	"webroot"     : "/var/www/htdocs/{NAME}",
+	"require"     : {		
+		"httpd" : "*",
+		"php"   : ">5.0.0"
+	},
+	"files"       : [
+		{
+			"type"        : "file",
+			"source"      : "targetconfig/databases.{TARGET}.php",
+			"destination" : "{WEBROOT}/config/autoload/databases.local.php",
+			"mode"        : "0644"
+		},
+		{
+			"type"        : "file",
+			"source"      : "vhost/vhost.{TARGET}.conf",
+			"destination" : "/etc/apache2/sites-enable/{NAME}.conf",
+			"mode"        : "0644",
+			"substitution" : {
+				"DOCUMENTROOT" : "{WEBROOT}/public"
+			}
+		},
+		{
+			"type"           : "directory",
+			"source"         : "project",
+			"destination"    : "{WEBROOT}",
+			"mode"           : "0644",
+			"include"        : [
+				".php",
+				"composer",
+				"public",
+				"vendor",
+				"language"
+			]
+		}
+	],
+	"preinstall": [
+		"echo 'preinstall gogo'"
+	],
+	"postinstall" : [
+		"echo 'postinstall gogo'",
+		"(cd {WEBROOT} && php -f composer.phar install)",
+		"apachectl restart"
+	],
+	"preuninstall" : [
+		"echo 'preuninstall gogo'"
+	],
+	"postuninstall" : [
+		"echo 'postuninstall gogo'"
+	]
+}

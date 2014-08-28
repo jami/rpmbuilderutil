@@ -328,6 +328,18 @@ sub copy_file {
                     return;
                 }
                 
+                if (exists($file->{"include"})) {
+					my $pass = 0;
+					foreach (@{$file->{"include"}}) {
+						if ($rel_file_path =~ m/$_/ig) {
+							$pass = 1;
+							last;
+						}
+                    }
+
+					return unless($pass);
+				}
+
                 my $basedir = dirname($to); 
                 `mkdir -p "$basedir" 2>&1`;
                 my $out  = `install -m $perm "$from" "$to"`;

@@ -210,8 +210,7 @@ You can either put shell commands to the handler or you use build in macros
 	],
 	"postinstall" : [
 		"echo 'postinstall'",
-		"touch '/var/log/myprogram.log'",
-		"chown myuser: '/var/log/myprogram.log'"
+		"macro::touchfile('/var/log/myprogram.log', 'myuser', 'mygroup', '0664')"
 	],
 	"preuninstall" : [
 		"echo 'preuninstall'"
@@ -221,6 +220,13 @@ You can either put shell commands to the handler or you use build in macros
 	]
 }
 ```
+#### Build-in macros
+
+* **macro::checkfile(path)** If *path* is not a regular file exit with 10
+* **macro::checkfolder(path)** If *path* is not a folder exit with 11
+* **macro::execute(cmd)** Execute a shell command. If command failed exit with 12
+* **macro::execute(delete)**
+* **macro::touchfile(path[,owner][,group][,mode])** Creates a file with user, group and file permissions
 
 ### Require
 
