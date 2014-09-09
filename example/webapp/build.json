@@ -26,6 +26,7 @@
 			"source"         : "project",
 			"destination"    : "{WEBROOT}",
 			"mode"           : "0644",
+			"compressed"     : "true",
 			"include"        : [
 				".php",
 				".phtml",

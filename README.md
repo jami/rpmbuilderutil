@@ -220,7 +220,7 @@ You can either put shell commands to the handler or you use build in macros
 	]
 }
 ```
-#### Build-in macros
+#### Build-in macros (NYI)
 
 * **macro::checkfile(path)** If *path* is not a regular file exit with 10
 * **macro::checkfolder(path)** If *path* is not a folder exit with 11

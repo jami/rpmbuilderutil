@@ -56,7 +56,7 @@ if (ref($rpm_config) eq "HASH") {
 
 foreach my $config (@config_list) {
     my $lookup = {
-        "VERSION" => "1.0.0",
+        "VERSION" => $version,
         "RELEASE" => "1",
         "LICENSE" => "none",
         "GROUP"   => "Utilities",
@@ -81,8 +81,8 @@ sub show_usage {
     print("rpmout=s\t\tRPM output folder\n");
     print("verbose\t\t\tSet verbose output\n");
     print("target=s\t\t\tSet default target\n");
+	print("version=s\t\t\tSet version\n");
     print("help\t\t\tShow usage message\n");
-    
     exit(0);
 }
 
@@ -227,7 +227,7 @@ sub create_lookup_map {
     my $lookup = shift;
     my $config = shift;
     chomp(my $arch = `uname -m`);
-    $lookup->{"VERSION"} = "1.0.0";
+    $lookup->{"VERSION"} = $version;
     $lookup->{"RELEASE"} = "1";
     $lookup->{"TARGET"}  = "";
     $lookup->{"ARCH"}    = $arch;
@@ -314,7 +314,7 @@ sub copy_file {
         
         my $mkdirout = `mkdir -p "$destpath" 2>&1`;
         die("Can't create destination path '$destpath' $mkdirout") if ($?);
-        my $perm = $file->{"mode"};
+        my $perm = $file->{"mode"};         
 
         find(
             sub {
@@ -329,16 +329,16 @@ sub copy_file {
                 }
                 
                 if (exists($file->{"include"})) {
-					my $pass = 0;
-					foreach (@{$file->{"include"}}) {
-						if ($rel_file_path =~ m/$_/ig) {
-							$pass = 1;
-							last;
-						}
+                    my $pass = 0;
+                    foreach (@{$file->{"include"}}) {
+                        if ($rel_file_path =~ m/$_/ig) {
+                            $pass = 1;
+                            last;
+                        }
                     }
 
-					return unless($pass);
-				}
+                    return unless($pass);
+		}
 
                 my $basedir = dirname($to); 
                 `mkdir -p "$basedir" 2>&1`;
@@ -347,7 +347,7 @@ sub copy_file {
                 push(@{$lookup->{"FILES"}}, $rel_dest . $rel_file_path);
             }, 
             $sourcepath
-        );        
+        );          
     }
 }
 
