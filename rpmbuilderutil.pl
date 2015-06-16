@@ -9,25 +9,27 @@ use File::Find;
 use JSON qw(decode_json);
 use Cwd qw(abs_path);
 
-my $configfile   = "build.json";
-my $verbose      = 0;
-my $help         = 0;
-my $basepath     = "./";
-my $version      = "1.0.0"; 
-my $rpmworkspace = ".rpmbuilder/";
-my $rpmbuildexec = "rpmbuild";
-my $rpmoutput    = "./"; 
-my $target       = "";
+my $configfile      = "build.json";
+my $verbose         = 0;
+my $help            = 0;
+my $basepath        = "./";
+my $version         = "1.0.0"; 
+my $rpmworkspace    = ".rpmbuilder/";
+my $rpmbuildexec    = "rpmbuild";
+my $rpmoutput       = "./"; 
+my $target          = "";
+my $remove_obsolete = 0;
 
 GetOptions(
-    "config=s"   => \$configfile,
-    "basepath=s" => \$basepath,
-    "rpmbuild=s" => \$rpmworkspace,
-    "verbose"    => \$verbose,
-    "help"       => \$help,
-    "version=s"  => \$version,
-    "rpmout=s"   => \$rpmoutput,
-    "target=s"   => \$target
+    "config=s"       => \$configfile,
+    "basepath=s"     => \$basepath,
+    "rpmbuild=s"     => \$rpmworkspace,
+    "verbose"        => \$verbose,
+    "help"           => \$help,
+    "version=s"      => \$version,
+    "rpmout=s"       => \$rpmoutput,
+    "target=s"       => \$target,
+	"removeobsolete" => \$remove_obsolete
 ) or die("Error in command line arguments\n");
 
 show_usage() if ($help);
@@ -56,21 +58,22 @@ if (ref($rpm_config) eq "HASH") {
 
 foreach my $config (@config_list) {
     my $lookup = {
-        "VERSION" => $version,
-        "RELEASE" => "1",
-        "LICENSE" => "none",
-        "GROUP"   => "Utilities",
-        "URL"     => "none",
-        "TARGET"  => "development"
-    };  
-    
+        "VERSION"         => $version,
+        "RELEASE"         => "1",
+        "LICENSE"         => "none",
+        "GROUP"           => "Utilities",
+        "URL"             => "none",
+        "TARGET"          => "development",
+        "REMOVE_OBSOLETE" => $remove_obsolete
+    };
+
     create_lookup_map($lookup, $config);
-    my $pkgPath = create_rpm_workspace($rpmworkspace, $lookup);    
-    prepare_files($pkgPath, $lookup, $config);    
+    my $pkgPath = create_rpm_workspace($rpmworkspace, $lookup);
+    prepare_files($pkgPath, $lookup, $config);
     my $specPath = create_rpm_spec($rpmworkspace, $lookup, $config);
     run_rpm_build($rpmworkspace, $specPath);
     copy_rpm($rpmoutput, $rpmworkspace, $lookup);
-    delete_rpm_workspace($rpmworkspace);    
+    delete_rpm_workspace($rpmworkspace);
 }
 
 sub show_usage {
@@ -80,8 +83,9 @@ sub show_usage {
     print("rpmbuild=s\t\tRPM build workspace\n");
     print("rpmout=s\t\tRPM output folder\n");
     print("verbose\t\t\tSet verbose output\n");
+    print("removeobsolete\t\t\tRemove obsolete packages first\n");
     print("target=s\t\t\tSet default target\n");
-	print("version=s\t\t\tSet version\n");
+    print("version=s\t\t\tSet version\n");
     print("help\t\t\tShow usage message\n");
     exit(0);
 }
@@ -183,9 +187,16 @@ sub create_spec {
         . "Group: {GROUP}\n"
         . "URL: {URL}\n";
         
-    my $requires = get_spec_requirement($config);    
-    $spec .= "Requires: $requires\n" if ($requires && length($requires));            
+    my $requires = get_spec_requirement($config);
+    $spec .= "Requires: $requires\n" if ($requires && length($requires));
         
+    my $obsolete = $remove_obsolete;
+    if (exists($config->{'remove_obsolete'})) {
+        $obsolete = $config->{'remove_obsolete'};
+    }
+
+    $spec .= "Obsoletes: {NAME} <= {VERSION}\n" if ($obsolete);
+
     $spec .= "\n"
         . "%description\n{DESCRIPTION}\n\n"
         . "%files\n";
@@ -227,19 +238,20 @@ sub create_lookup_map {
     my $lookup = shift;
     my $config = shift;
     chomp(my $arch = `uname -m`);
-    $lookup->{"VERSION"} = $version;
-    $lookup->{"RELEASE"} = "1";
-    $lookup->{"TARGET"}  = "";
-    $lookup->{"ARCH"}    = $arch;
-    $lookup->{"FILES"}   = [];
-    $lookup->{"TARGET"}  = $target;
-        
+    $lookup->{"VERSION"}         = $version;
+    $lookup->{"RELEASE"}         = "1";
+    $lookup->{"TARGET"}          = "";
+    $lookup->{"ARCH"}            = $arch;
+    $lookup->{"FILES"}           = [];
+    $lookup->{"TARGET"}          = $target;
+    $lookup->{"REMOVE_OBSOLETE"} = $remove_obsolete;
+
     foreach my $key (keys(%{$config})) {
         if (ref($config->{$key}) eq "ARRAY") {
             next;
         }
         
-        $lookup->{uc($key)} = $config->{$key};                
+        $lookup->{uc($key)} = $config->{$key};
     }
         
     foreach my $key1 (keys(%{$lookup})) {
@@ -314,7 +326,7 @@ sub copy_file {
         
         my $mkdirout = `mkdir -p "$destpath" 2>&1`;
         die("Can't create destination path '$destpath' $mkdirout") if ($?);
-        my $perm = $file->{"mode"};         
+        my $perm = $file->{"mode"};
 
         find(
             sub {
@@ -338,7 +350,7 @@ sub copy_file {
                     }
 
                     return unless($pass);
-		}
+                }
 
                 my $basedir = dirname($to); 
                 `mkdir -p "$basedir" 2>&1`;
